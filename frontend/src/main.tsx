@@ -19,7 +19,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <BrowserRouter>
       <ClerkProvider publishableKey={PUBLISHABLE_KEY} afterSignOutUrl="/">
-        <ChipiProvider>
+        <ChipiProvider config={{ apiPublicKey: import.meta.env.VITE_CHIPI_API_KEY }}>
           <QueryClientProvider client={queryClient}>
             <App />
           </QueryClientProvider>

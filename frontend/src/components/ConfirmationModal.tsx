@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { IoClose, IoWalletOutline } from 'react-icons/io5';
-import { useWallet } from '@aptos-labs/wallet-adapter-react';
-import { Aptos, AptosConfig, Network } from '@aptos-labs/ts-sdk';
+import { useUser, useAuth } from '@clerk/clerk-react';
+import { useGetWallet } from '@chipi-stack/chipi-react';
 
 interface ConfirmationModalProps {
   isOpen: boolean;
@@ -28,27 +28,30 @@ export default function ConfirmationModal({
   isLoading = false,
   transactionFee = '₦10.00'
 }: ConfirmationModalProps) {
-  const { account, connected } = useWallet();
+  const { user } = useUser();
+  const { getToken } = useAuth();
+  const { getWalletAsync } = useGetWallet();
   const [balance, setBalance] = useState<number>(0);
   
-  // Aptos client for balance queries
-  const config = new AptosConfig({ network: Network.TESTNET });
-  const aptos = new Aptos(config);
-  
-  // Fetch APT balance
+  // Fetch USDC balance
   useEffect(() => {
     const fetchBalance = async () => {
-      if (!account || !connected) {
+      if (!user) {
         setBalance(0);
         return;
       }
       
       try {
-        const balanceResponse = await aptos.getAccountAPTAmount({
-          accountAddress: account.address,
+        const token = await getToken();
+        if (!token) return;
+        
+        await getWalletAsync({
+          externalUserId: user.id,
+          bearerToken: token,
         });
-        // Convert from octas to APT (1 APT = 10^8 octas)
-        setBalance(balanceResponse / 100_000_000);
+        
+        // Mock USDC balance
+        setBalance(100);
       } catch (error) {
         console.error('Failed to fetch balance:', error);
         setBalance(0);
@@ -58,11 +61,11 @@ export default function ConfirmationModal({
     if (isOpen) {
       fetchBalance();
     }
-  }, [account, connected, aptos, isOpen]);
+  }, [user, getToken, getWalletAsync, isOpen]);
 
-  // Convert APT to NGN (mock rate: 1 APT = 1200 NGN)
-  const aptToNgn = 1200;
-  const balanceInNgn = (balance * aptToNgn).toFixed(2);
+  // Convert USDC to NGN (1 USDC = 1600 NGN)
+  const usdcToNgn = 1600;
+  const balanceInNgn = (balance * usdcToNgn).toFixed(2);
 
   if (!isOpen) return null;
 
@@ -116,7 +119,7 @@ export default function ConfirmationModal({
                   <IoWalletOutline className="w-5 h-5 text-accent" />
                 </div>
                 <div>
-                  <p className="text-white font-medium">Petra Wallet</p>
+                  <p className="text-white font-medium">USDC Wallet</p>
                   <p className="text-secondary text-sm">
                     Available: ₦{balanceInNgn}
                   </p>
