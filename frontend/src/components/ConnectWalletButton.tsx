@@ -3,7 +3,11 @@ import { useUser, useAuth } from '@clerk/clerk-react';
 import { useCreateWallet, useGetWallet } from '@chipi-stack/chipi-react';
 import { toast } from 'react-hot-toast';
 
-export default function ConnectWalletButton() {
+interface ConnectWalletButtonProps {
+  onWalletReady?: () => void;
+}
+
+export default function ConnectWalletButton({ onWalletReady }: ConnectWalletButtonProps) {
   const { user } = useUser();
   const { getToken } = useAuth();
   const { createWalletAsync, isLoading: isCreating } = useCreateWallet();
@@ -57,6 +61,11 @@ export default function ConnectWalletButton() {
       
       setHasWallet(true);
       toast.success('Wallet created successfully!');
+      
+      // Auto-proceed to home when wallet is created
+      if (onWalletReady) {
+        setTimeout(() => onWalletReady(), 1000); // Small delay to show success message
+      }
     } catch (error: any) {
       console.error('Error creating wallet:', error);
       toast.error(error.message || 'Failed to create wallet');
@@ -76,7 +85,7 @@ export default function ConnectWalletButton() {
       <button
         onClick={handleCreateWallet}
         disabled={isCreating}
-        className="btn-primary"
+        className="btn-primary w-full"
       >
         {isCreating ? 'Creating wallet...' : 'Create Wallet'}
       </button>
@@ -84,7 +93,7 @@ export default function ConnectWalletButton() {
   }
 
   return (
-    <button className="text-white bg-transparent border border-disabled px-4 py-2 rounded-lg hover:bg-white/10 transition-colors text-sm">
+    <button className="w-full text-white bg-transparent border border-disabled px-4 py-2 rounded-lg hover:bg-white/10 transition-colors text-sm">
       Wallet Ready
     </button>
   );

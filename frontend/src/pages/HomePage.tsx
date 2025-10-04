@@ -1,4 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useUser, useAuth } from '@clerk/clerk-react';
+import { useGetWallet } from '@chipi-stack/chipi-react';
 import Header from '../components/Header';
 import MainLayout from '../components/layout/MainLayout';
 import BankTransferForm from '../components/BankTransferForm';
@@ -13,7 +15,38 @@ import { IoChevronBackOutline } from 'react-icons/io5';
 type ActiveView = 'home' | 'airtime' | 'bank' | 'wallet-setup';
 
 export default function HomePage() {
+  const { user } = useUser();
+  const { getToken } = useAuth();
+  const { getWalletAsync } = useGetWallet();
   const [activeView, setActiveView] = useState<ActiveView>('wallet-setup');
+  const [isCheckingWallet, setIsCheckingWallet] = useState(true);
+
+  // Check if wallet exists and auto-proceed to home
+  useEffect(() => {
+    const checkWalletAndProceed = async () => {
+      if (!user) return;
+      
+      try {
+        const token = await getToken();
+        if (!token) return;
+        
+        await getWalletAsync({
+          externalUserId: user.id,
+          bearerToken: token,
+        });
+        
+        // Wallet exists, proceed to home
+        setActiveView('home');
+      } catch (error) {
+        // Wallet doesn't exist, stay on wallet-setup
+        setActiveView('wallet-setup');
+      } finally {
+        setIsCheckingWallet(false);
+      }
+    };
+
+    checkWalletAndProceed();
+  }, [user, getToken, getWalletAsync]);
 
   const handleAirtimeClick = () => {
     setActiveView('airtime');
@@ -32,17 +65,22 @@ export default function HomePage() {
     <div className="bg-primary min-h-screen text-white">
       {/* Mobile Layout */}
       <div className="block lg:hidden">
-        {activeView === 'wallet-setup' ? (
+        {isCheckingWallet ? (
+          <div className="min-h-screen flex flex-col items-center justify-center p-4">
+            <div className="w-6 h-6 border-2 border-secondary border-t-accent rounded-full animate-spin mb-4"></div>
+            <p className="text-secondary">Loading...</p>
+          </div>
+        ) : activeView === 'wallet-setup' ? (
           <div className="min-h-screen flex flex-col items-center justify-center p-4">
             <div className="text-center mb-8">
               <h2 className="text-2xl font-bold mb-4">Setup Your Wallet</h2>
               <p className="text-secondary mb-8">Create your secure USDC wallet to start making payments</p>
             </div>
             <div className="w-full max-w-sm">
-              <ConnectWalletButton />
+              <ConnectWalletButton onWalletReady={() => setActiveView('home')} />
               <button 
                 onClick={() => setActiveView('home')}
-                className="w-full mt-4 text-accent hover:text-accent/80 transition-colors"
+                className="w-full mt-4 text-accent hover:text-accent/80 transition-colors text-center py-2"
               >
                 Skip for now
               </button>
@@ -78,7 +116,12 @@ export default function HomePage() {
 
       {/* Desktop Layout */}
       <div className="hidden lg:block">
-        {activeView === 'wallet-setup' ? (
+        {isCheckingWallet ? (
+          <div className="min-h-screen flex flex-col items-center justify-center p-4">
+            <div className="w-6 h-6 border-2 border-secondary border-t-accent rounded-full animate-spin mb-4"></div>
+            <p className="text-secondary">Loading...</p>
+          </div>
+        ) : activeView === 'wallet-setup' ? (
           <div className="min-h-screen flex flex-col items-center justify-center p-4">
             <Header />
             <div className="text-center mb-8">
@@ -86,10 +129,10 @@ export default function HomePage() {
               <p className="text-secondary mb-8">Create your secure USDC wallet to start making payments</p>
             </div>
             <div className="w-full max-w-sm">
-              <ConnectWalletButton />
+              <ConnectWalletButton onWalletReady={() => setActiveView('home')} />
               <button 
                 onClick={() => setActiveView('home')}
-                className="w-full mt-4 text-accent hover:text-accent/80 transition-colors"
+                className="w-full mt-4 text-accent hover:text-accent/80 transition-colors text-center py-2"
               >
                 Skip for now
               </button>
