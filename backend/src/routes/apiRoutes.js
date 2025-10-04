@@ -3,7 +3,7 @@ console.log("--- 2. Loading apiRoutes.js ---");
 
 const express = require("express");
 const router = express.Router();
-const aptosService = require("../services/aptosService");
+const starknetService = require("../services/starknetService"); // Will rename file later
 const {
     resolveBankAccount,
     executeBankTransfer,
@@ -51,10 +51,10 @@ router.post("/initiate-payment", async (req, res) => {
             throw new Error('Treasury address not configured');
         }
 
-        console.log("Confirming Aptos transaction...");
+        console.log("Confirming Starknet transaction...");
 
-        // Use Aptos service to confirm transaction via Nodit API
-        const txResult = await aptosService.confirmTransaction(transactionHash);
+        // Use Starknet service to confirm transaction via RPC
+        const txResult = await starknetService.confirmTransaction(transactionHash);
         
         if (!txResult.success) {
             console.log("Transaction confirmation failed:", txResult.error);
@@ -115,7 +115,7 @@ router.post("/resolve-account", async (req, res) => {
     }
 });
 
-// Note: Aptos transactions are signed and submitted client-side via wallet
+// Note: Starknet transactions are signed and submitted client-side via ChipiPay
 // No need for server-side transaction creation/signing endpoints
 
 // GET /get-balance/:accountId
@@ -125,7 +125,7 @@ router.get("/get-balance/:accountId", async (req, res) => {
         if (!accountId) {
             return res.status(400).json({ error: "accountId is required" });
         }
-        const balance = await aptosService.getAccountBalance(accountId);
+        const balance = await starknetService.getUSDCBalance(accountId);
         res.json({ balance });
     } catch (err) {
         console.error('Error getting balance:', err);
