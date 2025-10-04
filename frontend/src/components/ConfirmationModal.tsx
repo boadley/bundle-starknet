@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { IoClose, IoWalletOutline } from 'react-icons/io5';
 import { useUser, useAuth } from '@clerk/clerk-react';
 import { useGetWallet } from '@chipi-stack/chipi-react';
+import { getUSDCBalance } from '../utils/starknet';
 
 interface ConfirmationModalProps {
   isOpen: boolean;
@@ -45,13 +46,20 @@ export default function ConfirmationModal({
         const token = await getToken();
         if (!token) return;
         
-        await getWalletAsync({
+        const wallet = await getWalletAsync({
           externalUserId: user.id,
           bearerToken: token,
         });
         
-        // Mock USDC balance
-        setBalance(100);
+        // Pad address for balance checking
+        let paddedAddress = wallet.publicKey;
+        if (paddedAddress.startsWith('0x') && paddedAddress.length < 66) {
+          paddedAddress = '0x00' + paddedAddress.slice(2);
+        }
+        
+        // Get real USDC balance using starknet.js
+        const usdcBalance = await getUSDCBalance(paddedAddress);
+        setBalance(usdcBalance);
       } catch (error) {
         console.error('Failed to fetch balance:', error);
         setBalance(0);

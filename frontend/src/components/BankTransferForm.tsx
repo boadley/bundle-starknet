@@ -213,7 +213,7 @@ export default function BankTransferForm() {
 
           {amount && (
             <div className="text-sm text-secondary">
-              Cost: ~{hbarCost} APT
+              Cost: ~{hbarCost} USDC
             </div>
           )}
 

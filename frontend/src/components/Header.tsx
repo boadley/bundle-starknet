@@ -1,9 +1,43 @@
-import { useUser } from '@clerk/clerk-react';
+import { useState } from 'react';
+import { useUser, useAuth } from '@clerk/clerk-react';
 import { UserButton } from '@clerk/clerk-react';
+import { useGetWallet } from '@chipi-stack/chipi-react';
 import { IoHelpCircleOutline, IoNotificationsOutline } from 'react-icons/io5';
+import { toast } from 'react-hot-toast';
 
 export default function Header() {
   const { user, isSignedIn } = useUser();
+  const { getToken } = useAuth();
+  const { getWalletAsync } = useGetWallet();
+  const [walletAddress, setWalletAddress] = useState<string>('');
+
+  const handleNameClick = async () => {
+    if (!user) return;
+    
+    try {
+      const token = await getToken();
+      if (!token) return;
+      
+      const wallet = await getWalletAsync({
+        externalUserId: user.id,
+        bearerToken: token,
+      });
+      
+      // ChipiPay's publicKey needs padding with 00 after 0x if less than 64 chars
+      let contractAddress = wallet.publicKey;
+      
+      if (contractAddress.startsWith('0x') && contractAddress.length < 66) {
+        contractAddress = '0x00' + contractAddress.slice(2);
+      }
+      
+      setWalletAddress(contractAddress);
+      await navigator.clipboard.writeText(contractAddress);
+      toast.success('Wallet address copied to clipboard!');
+    } catch (error) {
+      console.error('Copy address error:', error);
+      toast.error('Failed to copy wallet address');
+    }
+  };
 
   return (
     <header className="bg-primary p-4 flex justify-between items-center">
@@ -22,7 +56,11 @@ export default function Header() {
             />
             <div>
               <p className="text-sm text-secondary">Hi,</p>
-              <p className="text-white font-medium">
+              <p 
+                className="text-white font-medium cursor-pointer hover:text-accent transition-colors"
+                onClick={handleNameClick}
+                title="Click to copy wallet address"
+              >
                 {user.firstName || user.emailAddresses[0]?.emailAddress?.split('@')[0] || 'User'}
               </p>
             </div>

@@ -165,7 +165,7 @@ export default function AirtimeForm() {
 
           {amount && (
             <div className="text-sm text-secondary">
-              Cost: ~{hbarCost} APT
+              Cost: ~{hbarCost} USDC
             </div>
           )}
 
