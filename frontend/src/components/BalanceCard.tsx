@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useUser, useAuth } from '@clerk/clerk-react';
 import { useGetWallet } from '@chipi-stack/chipi-react';
 import { getUSDCBalance } from '../utils/starknet';
@@ -7,16 +7,24 @@ export default function BalanceCard() {
   const { user } = useUser();
   const { getToken } = useAuth();
   const { getWalletAsync } = useGetWallet();
-  const [balance, setBalance] = useState<number>(0);
+  const [balance, setBalance] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [walletAddress, setWalletAddress] = useState<string>('');
+  const lastFetchTime = useRef<number>(0);
+  const FETCH_INTERVAL = 30000; // 30 seconds minimum between fetches
 
-  // Fetch USDC balance
+  // Fetch USDC balance with rate limiting
   useEffect(() => {
     const fetchBalance = async () => {
       if (!user) {
-        setBalance(0);
+        setBalance(null);
+        setWalletAddress('');
         return;
+      }
+
+      const now = Date.now();
+      if (now - lastFetchTime.current < FETCH_INTERVAL) {
+        return; // Skip if fetched recently
       }
 
       setIsLoading(true);
@@ -30,6 +38,7 @@ export default function BalanceCard() {
         });
         
         setWalletAddress(wallet.publicKey);
+        
         // Pad address for balance checking
         let paddedAddress = wallet.publicKey;
         if (paddedAddress.startsWith('0x') && paddedAddress.length < 66) {
@@ -39,16 +48,17 @@ export default function BalanceCard() {
         // Get real USDC balance using starknet.js
         const usdcBalance = await getUSDCBalance(paddedAddress);
         setBalance(usdcBalance);
+        lastFetchTime.current = now;
       } catch (error) {
         console.error('Failed to fetch balance:', error);
-        setBalance(0);
+        if (balance === null) setBalance(0); // Only reset if no previous balance
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchBalance();
-  }, [user, getToken, getWalletAsync]);
+  }, [user]);
   
   const getDisplayAddress = () => {
     if (walletAddress) {
@@ -59,7 +69,9 @@ export default function BalanceCard() {
 
   // Convert USDC to NGN (1 USDC = 1600 NGN for demo)
   const usdcToNgn = 1600;
-  const balanceInNgn = (balance * usdcToNgn).toFixed(2);
+  const displayBalance = balance ?? 0;
+  const balanceInNgn = (displayBalance * usdcToNgn).toFixed(2);
+  const showLoading = isLoading && balance === null; // Only show loading on first load
 
   return (
     <div className="balance-card mb-8">
@@ -67,22 +79,27 @@ export default function BalanceCard() {
         {getDisplayAddress()}
       </div>
       <div className="text-4xl font-bold text-white mb-1">
-        {isLoading ? (
+        {showLoading ? (
           <div className="flex items-center">
             <div className="w-6 h-6 border-2 border-secondary border-t-accent rounded-full animate-spin mr-2"></div>
             Loading...
           </div>
         ) : user ? (
-          `₦${balanceInNgn}`
+          <div className="flex items-center">
+            {`₦${balanceInNgn}`}
+            {isLoading && balance !== null && (
+              <div className="w-4 h-4 border border-secondary border-t-accent rounded-full animate-spin ml-2 opacity-50"></div>
+            )}
+          </div>
         ) : (
           '₦0.00'
         )}
       </div>
       <div className="text-base text-secondary flex items-center justify-center gap-2">
         <span>USDC</span>
-        {user && balance > 0 && (
+        {user && displayBalance > 0 && (
           <span className="text-sm">
-            (${balance.toFixed(2)} USDC)
+            (${displayBalance.toFixed(2)} USDC)
           </span>
         )}
       </div>
