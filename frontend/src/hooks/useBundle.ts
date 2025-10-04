@@ -4,7 +4,7 @@ import { useTransfer, useGetWallet } from '@chipi-stack/chipi-react';
 import { toast } from 'react-hot-toast';
 import { initiatePayment } from '../services/apiService';
 import { withRetry } from '../utils/retry';
-import { getUSDCBalance } from '../utils/starknet';
+import { useBalance } from '../contexts/BalanceContext';
 import type { ChainToken } from '@chipi-stack/types';
 
 export const useBundle = () => {
@@ -12,6 +12,7 @@ export const useBundle = () => {
   const { getToken } = useAuth();
   const { getWalletAsync } = useGetWallet();
   const { transferAsync, isLoading: isTransferring } = useTransfer();
+  const { refreshBalance } = useBalance();
   const [isLoading, setIsLoading] = useState(false);
 
   const executePayment = async (
@@ -61,18 +62,7 @@ export const useBundle = () => {
 
       toast.success('Processing payment...');
 
-      // Check USDC balance before transfer
-      try {
-        const balance = await getUSDCBalance(wallet.publicKey);
-        console.log(`Wallet USDC balance: ${balance}`);
-        
-        if (balance < parseFloat(usdcAmount)) {
-          throw new Error(`Insufficient USDC balance. Required: ${usdcAmount}, Available: ${balance}`);
-        }
-      } catch (balanceError) {
-        console.warn('Could not check balance:', balanceError);
-        // Continue with transfer attempt
-      }
+      // Note: Balance check removed - will be handled by ChipiPay
       
       console.log(`Attempting transfer of ${usdcAmount} USDC to ${treasuryAddress}`);
 
@@ -140,6 +130,9 @@ export const useBundle = () => {
       );
 
       toast.success('Payment completed successfully!');
+      
+      // Refresh balance after successful transaction
+      await refreshBalance();
       
       if (onSuccess) {
         onSuccess(hash);

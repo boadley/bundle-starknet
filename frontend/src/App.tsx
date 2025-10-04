@@ -5,6 +5,7 @@ import { Toaster } from 'react-hot-toast';
 import LoginPage from './pages/LoginPage';
 import HomePage from './pages/HomePage';
 import StatusPage from './components/StatusPage';
+import { BalanceProvider } from './contexts/BalanceContext';
 
 function App() {
   const { isSignedIn, user } = useUser();
@@ -21,11 +22,13 @@ function App() {
   return (
     <>
       <Toaster />
-      <Routes>
-        <Route path="/" element={<HomePage />} />
-        <Route path="/status" element={<StatusPage />} />
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
+      <BalanceProvider>
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/status" element={<StatusPage />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </BalanceProvider>
     </>
   );
 }

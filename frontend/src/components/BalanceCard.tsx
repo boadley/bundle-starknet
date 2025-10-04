@@ -1,64 +1,9 @@
-import { useState, useEffect, useRef } from 'react';
-import { useUser, useAuth } from '@clerk/clerk-react';
-import { useGetWallet } from '@chipi-stack/chipi-react';
-import { getUSDCBalance } from '../utils/starknet';
+import { useUser } from '@clerk/clerk-react';
+import { useBalance } from '../contexts/BalanceContext';
 
 export default function BalanceCard() {
   const { user } = useUser();
-  const { getToken } = useAuth();
-  const { getWalletAsync } = useGetWallet();
-  const [balance, setBalance] = useState<number | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [walletAddress, setWalletAddress] = useState<string>('');
-  const lastFetchTime = useRef<number>(0);
-  const FETCH_INTERVAL = 30000; // 30 seconds minimum between fetches
-
-  // Fetch USDC balance with rate limiting
-  useEffect(() => {
-    const fetchBalance = async () => {
-      if (!user) {
-        setBalance(null);
-        setWalletAddress('');
-        return;
-      }
-
-      const now = Date.now();
-      if (now - lastFetchTime.current < FETCH_INTERVAL) {
-        return; // Skip if fetched recently
-      }
-
-      setIsLoading(true);
-      try {
-        const token = await getToken();
-        if (!token) return;
-
-        const wallet = await getWalletAsync({
-          externalUserId: user.id,
-          bearerToken: token,
-        });
-        
-        setWalletAddress(wallet.publicKey);
-        
-        // Pad address for balance checking
-        let paddedAddress = wallet.publicKey;
-        if (paddedAddress.startsWith('0x') && paddedAddress.length < 66) {
-          paddedAddress = '0x00' + paddedAddress.slice(2);
-        }
-        
-        // Get real USDC balance using starknet.js
-        const usdcBalance = await getUSDCBalance(paddedAddress);
-        setBalance(usdcBalance);
-        lastFetchTime.current = now;
-      } catch (error) {
-        console.error('Failed to fetch balance:', error);
-        if (balance === null) setBalance(0); // Only reset if no previous balance
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchBalance();
-  }, [user]);
+  const { balance, isLoading, walletAddress } = useBalance();
   
   const getDisplayAddress = () => {
     if (walletAddress) {
