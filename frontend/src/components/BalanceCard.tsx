@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useUser, useAuth } from '@clerk/clerk-react';
 import { useGetWallet } from '@chipi-stack/chipi-react';
+import { getUSDCBalance } from '../utils/starknet';
 
 export default function BalanceCard() {
   const { user } = useUser();
@@ -10,7 +11,7 @@ export default function BalanceCard() {
   const [isLoading, setIsLoading] = useState(false);
   const [walletAddress, setWalletAddress] = useState<string>('');
 
-  // Fetch USDC balance (mock for demo)
+  // Fetch USDC balance
   useEffect(() => {
     const fetchBalance = async () => {
       if (!user) {
@@ -29,8 +30,15 @@ export default function BalanceCard() {
         });
         
         setWalletAddress(wallet.publicKey);
-        // Mock USDC balance - in production, fetch from ChipiPay API
-        setBalance(100); // Demo: $100 USDC
+        // Pad address for balance checking
+        let paddedAddress = wallet.publicKey;
+        if (paddedAddress.startsWith('0x') && paddedAddress.length < 66) {
+          paddedAddress = '0x00' + paddedAddress.slice(2);
+        }
+        
+        // Get real USDC balance using starknet.js
+        const usdcBalance = await getUSDCBalance(paddedAddress);
+        setBalance(usdcBalance);
       } catch (error) {
         console.error('Failed to fetch balance:', error);
         setBalance(0);
