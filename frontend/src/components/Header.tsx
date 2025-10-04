@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { useUser, useAuth } from '@clerk/clerk-react';
 import { UserButton } from '@clerk/clerk-react';
 import { useGetWallet } from '@chipi-stack/chipi-react';
@@ -9,7 +8,7 @@ export default function Header() {
   const { user, isSignedIn } = useUser();
   const { getToken } = useAuth();
   const { getWalletAsync } = useGetWallet();
-  const [walletAddress, setWalletAddress] = useState<string>('');
+
 
   const handleNameClick = async () => {
     if (!user) return;
@@ -30,7 +29,7 @@ export default function Header() {
         contractAddress = '0x00' + contractAddress.slice(2);
       }
       
-      setWalletAddress(contractAddress);
+
       await navigator.clipboard.writeText(contractAddress);
       toast.success('Wallet address copied to clipboard!');
     } catch (error) {

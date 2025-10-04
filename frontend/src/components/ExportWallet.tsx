@@ -98,7 +98,7 @@ export default function ExportWallet() {
             token: {
               address: '0x04718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d',
               decimals: 18
-            }
+          }
           } as any, // Bypass TypeScript restriction for custom token
         });
       } catch (error1) {
@@ -130,6 +130,7 @@ export default function ExportWallet() {
               },
               amount: strkBalance.toString(),
               recipient: recipientAddress,
+              token: "USDC" as any, // Required field
             },
           });
         } catch (error3) {
@@ -146,7 +147,7 @@ export default function ExportWallet() {
                 },
                 amount: strkBalance.toString(),
                 recipient: recipientAddress,
-                token: "ETH" as any, // Try ETH as fallback
+                token: "ETH" as any,
               },
             });
           } catch (error4) {

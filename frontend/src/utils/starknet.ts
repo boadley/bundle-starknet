@@ -1,4 +1,4 @@
-import { RpcProvider, Contract, cairo, uint256 } from 'starknet';
+import { RpcProvider, Contract, uint256 } from 'starknet';
 
 // USDC token contract address on Starknet Mainnet
 const USDC_CONTRACT_ADDRESS = '0x053c91253bc9682c04929ca02ed00b3e423f6710d2ee7e0d5ebb06f3ecf368a8';
@@ -21,18 +21,19 @@ const ERC20_ABI = [
 
 export async function getUSDCBalance(walletAddress: string): Promise<number> {
   try {
-    console.log('Checking USDC balance for:', walletAddress);
+    console.log('[starknet.ts] Checking USDC balance for:', walletAddress);
+    console.trace('Balance check called from:'); // Show call stack
     
     const contract = new Contract(ERC20_ABI, USDC_CONTRACT_ADDRESS, provider);
     const balance = await contract.call('balanceOf', [walletAddress]);
     
-    console.log('Raw balance response:', balance);
+    console.log('[starknet.ts] Raw balance response:', balance);
     
     // Convert Uint256 to number (USDC has 6 decimals)
-    const balanceUint256 = uint256.uint256ToBN(balance.balance);
+    const balanceUint256 = uint256.uint256ToBN((balance as any).balance || balance);
     const balanceInUsdc = Number(balanceUint256) / (10 ** 6);
     
-    console.log('USDC balance:', balanceInUsdc);
+    console.log('[starknet.ts] USDC balance calculated:', balanceInUsdc);
     return balanceInUsdc;
   } catch (error: any) {
     console.error('Error fetching USDC balance:', error);

@@ -102,7 +102,7 @@ export const useBundle = () => {
       // Extract transaction hash from response
       const hash = typeof transferResponse === 'string' 
         ? transferResponse 
-        : transferResponse.transactionHash || transferResponse.hash || transferResponse;
+        : (transferResponse as any)?.transactionHash || (transferResponse as any)?.hash || transferResponse;
       
       if (!hash) {
         throw new Error('Transaction hash not found in response');
@@ -119,8 +119,8 @@ export const useBundle = () => {
             userAddress: wallet.publicKey,
             paymentType, 
             details,
-            tokenAmount: usdcAmount,
-            tokenSymbol: 'USDC'
+            // tokenAmount: usdcAmount, // Remove if not in type
+            // tokenSymbol: 'USDC' // Remove if not in type
           });
         },
         (error: any) => {
@@ -132,7 +132,9 @@ export const useBundle = () => {
       toast.success('Payment completed successfully!');
       
       // Refresh balance after successful transaction
+      console.log('Transaction completed, refreshing balance...');
       await refreshBalance();
+      console.log('Balance refresh completed');
       
       if (onSuccess) {
         onSuccess(hash);

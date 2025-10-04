@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, useRef, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, useRef, type ReactNode } from 'react';
 import { useUser, useAuth } from '@clerk/clerk-react';
 import { useGetWallet } from '@chipi-stack/chipi-react';
 import { getUSDCBalance } from '../utils/starknet';
@@ -34,9 +34,11 @@ export function BalanceProvider({ children }: { children: ReactNode }) {
     
     // Skip if fetched recently and not forced
     if (!force && now - lastFetchTime.current < TWO_MINUTES) {
+      console.log('Skipping balance fetch - too recent');
       return;
     }
 
+    console.log('Fetching balance...', { force, user: user.id });
     setIsLoading(true);
     try {
       const token = await getToken();
@@ -55,7 +57,10 @@ export function BalanceProvider({ children }: { children: ReactNode }) {
         paddedAddress = '0x00' + paddedAddress.slice(2);
       }
       
+      console.log('Calling getUSDCBalance for:', paddedAddress);
       const usdcBalance = await getUSDCBalance(paddedAddress);
+      console.log('Balance fetched:', usdcBalance);
+      
       setBalance(usdcBalance);
       lastFetchTime.current = now;
     } catch (error) {
@@ -89,6 +94,7 @@ export function BalanceProvider({ children }: { children: ReactNode }) {
   }, [user]);
 
   const refreshBalance = async () => {
+    console.log('Manual balance refresh triggered');
     await fetchBalance(true);
   };
 
