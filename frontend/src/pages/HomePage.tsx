@@ -10,6 +10,7 @@ import QuickActionsRow from '../components/QuickActionsRow';
 import TransactionHistorySection from '../components/TransactionHistorySection';
 import ServicesGrid from '../components/ServicesGrid';
 import ConnectWalletButton from '../components/ConnectWalletButton';
+// import ExportWallet from '../components/ExportWallet';
 import { IoChevronBackOutline } from 'react-icons/io5';
 
 type ActiveView = 'home' | 'airtime' | 'bank' | 'wallet-setup';
@@ -94,6 +95,8 @@ export default function HomePage() {
               <QuickActionsRow onBankTransferClick={handleBankTransferClick} />
               <TransactionHistorySection />
               <ServicesGrid onAirtimeClick={handleAirtimeClick} />
+              {/* Temporary: Remove before production */}
+              {/* <ExportWallet /> */}
             </main>
           </MainLayout>
         ) : (
