@@ -1,6 +1,6 @@
 # Bundle: The OpenRouter for Fiat
 
-![Bundle Logo](https://github.com/boadley/bundle-aptos/blob/main/media/bundle_logo_128_128.png)
+![Bundle Logo](https://github.com/boadley/bundle-Starknet/blob/main/media/bundle_logo_128_128.png)
 
 **The financial super-app that connects the global crypto economy to everyday Nigerian commerce.**
 
@@ -8,7 +8,7 @@
 
 | **Quick Links** | |
 |---|---|
-| 🚀 **Live App Demo** | [bundle-aptos.splashycm.xyz](https://bundle-aptos.splashycm.xyz) (_Optimized for mobile_) |
+| 🚀 **Live App Demo** | [bundle-Starknet.splashycm.xyz](https://bundle-Starknet.splashycm.xyz) (_Optimized for mobile_) |
 | 🎬 **Watch the 3-Min Video Pitch** | [Watch on YouTube](https://youtube.com/shorts/BySNTIsQe4Y?feature=share) |
 | 📊 **View the Pitch Deck** | [Pitch Deck Link](https://the-future-is-bundled-ap-ppk4lx9.gamma.site/) |
 
@@ -16,7 +16,7 @@
 
 ## 🎬 The Demo Video (The Best Place to Start)
 
-<a href="https://youtube.com/shorts/BySNTIsQe4Y?feature=share"><img src="https://github.com/boadley/bundle-aptos/blob/main/media/bundle_video_thumbnail.jpg" alt="Bundle Demo Video Screenshot" width="300"></a>
+<a href="https://youtube.com/shorts/BySNTIsQe4Y?feature=share"><img src="https://github.com/boadley/bundle-Starknet/blob/main/media/bundle_video_thumbnail.jpg" alt="Bundle Demo Video Screenshot" width="300"></a>
 <br>
 **(Click the image to watch the 3-minute video)**
 
@@ -32,9 +32,9 @@ Nigeria has one of the world's most vibrant crypto economies. Yet, using this di
 
 ## ✨ How It Works: The "OpenRouter" Magic
 
-Bundle is a non-custodial web app built on Aptos. Our backend acts as an intelligent routing engine:
-1.  **User Pays in Crypto:** A user initiates a payment for a N10,000 bank transfer using USDC (or APT).
-2.  **Aptos Confirms:** We confirm the transaction in 2-3 seconds on the Aptos network.
+Bundle is a non-custodial web app built on Starknet. Our backend acts as an intelligent routing engine:
+1.  **User Pays in Crypto:** A user initiates a payment for a N10,000 bank transfer using USDC.
+2.  **Starknet Confirms:** We confirm the transaction in 2-3 seconds on the Starknet network.
 3.  **Router Executes in Fiat:** Our backend instantly makes a N10,000 Naira payment to the recipient from our corporate account via the Paystack API.
 4.  **The Result:** The recipient gets Naira instantly. They have no idea crypto was involved. It's fast, secure, and regulator-friendly.
 
