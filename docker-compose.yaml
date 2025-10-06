@@ -9,7 +9,6 @@ services:
       - PAYSTACK_SECRET_KEY=${PAYSTACK_SECRET_KEY}
       - TREASURY_ADDRESS=${TREASURY_ADDRESS}
       - FRONTEND_URL=${FRONTEND_URL}
-      - NODIT_API_KEY=${NODIT_API_KEY}
     expose:
       - "3000"
     networks:
@@ -25,9 +24,11 @@ services:
         - VITE_TREASURY_ADDRESS=${VITE_TREASURY_ADDRESS}
         - VITE_API_URL=/api
         - VITE_APP_URL=${VITE_APP_URL}
+        - VITE_CLERK_PUBLISHABLE_KEY=${VITE_CLERK_PUBLISHABLE_KEY}
+        - VITE_CHIPI_API_KEY=${VITE_CHIPI_API_KEY}
     restart: unless-stopped
     ports:
-      - "8087:80"
+      - "8089:80"
     depends_on:
       - backend
     networks:
