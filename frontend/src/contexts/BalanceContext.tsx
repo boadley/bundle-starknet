@@ -2,6 +2,7 @@ import { createContext, useContext, useState, useEffect, useRef, type ReactNode 
 import { useUser, useAuth } from '@clerk/clerk-react';
 import { useGetWallet } from '@chipi-stack/chipi-react';
 import { getUSDCBalance } from '../utils/starknet';
+import { padWalletAddress } from '../utils/address';
 
 interface BalanceContextType {
   balance: number | null;
@@ -61,10 +62,7 @@ export function BalanceProvider({ children }: { children: ReactNode }) {
         setIsLoading(true);
         
         // Pad address for balance checking
-        let paddedAddress = wallet.publicKey;
-        if (paddedAddress.startsWith('0x') && paddedAddress.length < 66) {
-          paddedAddress = '0x00' + paddedAddress.slice(2);
-        }
+        const paddedAddress = padWalletAddress(wallet.publicKey);
         
         const usdcBalance = await getUSDCBalance(paddedAddress);
         setBalance(usdcBalance);

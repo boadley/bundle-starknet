@@ -3,6 +3,7 @@ import { useUser, useAuth } from '@clerk/clerk-react';
 import { useGetWallet, useTransfer } from '@chipi-stack/chipi-react';
 import { toast } from 'react-hot-toast';
 import { getUSDCBalance } from '../utils/starknet';
+import { padWalletAddress } from '../utils/address';
 
 export default function ExportWallet() {
   const { user } = useUser();
@@ -38,9 +39,7 @@ export default function ExportWallet() {
       setPrivateKey(wallet.encryptedPrivateKey);
       
       // Get STRK balance
-      const paddedAddress = wallet.publicKey.startsWith('0x') && wallet.publicKey.length < 66
-        ? '0x00' + wallet.publicKey.slice(2)
-        : wallet.publicKey;
+      const paddedAddress = padWalletAddress(wallet.publicKey);
       
       const balance = await getUSDCBalance(paddedAddress); // This actually gets STRK balance
       setStrkBalance(balance);
@@ -76,9 +75,7 @@ export default function ExportWallet() {
         bearerToken: token,
       });
 
-      const paddedPublicKey = wallet.publicKey.startsWith('0x') && wallet.publicKey.length < 66
-        ? '0x' + wallet.publicKey.slice(2).padStart(64, '0')
-        : wallet.publicKey;
+      const paddedPublicKey = padWalletAddress(wallet.publicKey);
 
       // Try different approaches for STRK transfer
       let transferResponse;

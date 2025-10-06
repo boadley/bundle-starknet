@@ -3,6 +3,7 @@ import { IoClose, IoWalletOutline } from 'react-icons/io5';
 import { useUser, useAuth } from '@clerk/clerk-react';
 import { useGetWallet } from '@chipi-stack/chipi-react';
 import { getUSDCBalance } from '../utils/starknet';
+import { padWalletAddress } from '../utils/address';
 
 interface ConfirmationModalProps {
   isOpen: boolean;
@@ -52,10 +53,7 @@ export default function ConfirmationModal({
         });
         
         // Pad address for balance checking
-        let paddedAddress = wallet.publicKey;
-        if (paddedAddress.startsWith('0x') && paddedAddress.length < 66) {
-          paddedAddress = '0x00' + paddedAddress.slice(2);
-        }
+        const paddedAddress = padWalletAddress(wallet.publicKey);
         
         // Get real USDC balance using starknet.js
         const usdcBalance = await getUSDCBalance(paddedAddress);

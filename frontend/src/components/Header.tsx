@@ -4,6 +4,7 @@ import { useGetWallet } from '@chipi-stack/chipi-react';
 import { IoHelpCircleOutline, IoNotificationsOutline } from 'react-icons/io5';
 import { toast } from 'react-hot-toast';
 import { useBalance } from '../contexts/BalanceContext';
+import { padWalletAddress } from '../utils/address';
 
 export default function Header() {
   const { user, isSignedIn } = useUser();
@@ -37,10 +38,7 @@ export default function Header() {
       }
       
       // ChipiPay's publicKey needs padding with 00 after 0x if less than 64 chars
-      let contractAddress = addressToCopy;
-      if (contractAddress.startsWith('0x') && contractAddress.length < 66) {
-        contractAddress = '0x00' + contractAddress.slice(2);
-      }
+      const contractAddress = padWalletAddress(addressToCopy);
       
       // Try modern clipboard API first, fallback for mobile browsers
       if (navigator.clipboard && window.isSecureContext) {

@@ -5,6 +5,7 @@ import { toast } from 'react-hot-toast';
 import { initiatePayment } from '../services/apiService';
 import { withRetry } from '../utils/retry';
 import { useBalance } from '../contexts/BalanceContext';
+import { padWalletAddress } from '../utils/address';
 import type { ChainToken } from '@chipi-stack/types';
 
 export const useBundle = () => {
@@ -52,10 +53,11 @@ export const useBundle = () => {
       }
 
       // Treasury address for receiving USDC payments
-      const treasuryAddress = import.meta.env.VITE_TREASURY_ADDRESS as string;
-      if (!treasuryAddress) {
+      const rawTreasuryAddress = import.meta.env.VITE_TREASURY_ADDRESS as string;
+      if (!rawTreasuryAddress) {
         throw new Error('Treasury address not configured');
       }
+      const treasuryAddress = padWalletAddress(rawTreasuryAddress);
 
       // Convert NGN to USDC (1 USDC = 1600 NGN) with minimum amount validation
       const usdcAmount = Math.max(0.01, details.amount / 1600).toFixed(6); // Minimum 0.01 USDC
@@ -67,9 +69,7 @@ export const useBundle = () => {
       console.log(`Attempting transfer of ${usdcAmount} USDC to ${treasuryAddress}`);
 
       // Pad wallet public key to 66 characters if needed
-      const paddedPublicKey = wallet.publicKey.startsWith('0x') && wallet.publicKey.length < 66
-        ? '0x' + wallet.publicKey.slice(2).padStart(64, '0')
-        : wallet.publicKey;
+      const paddedPublicKey = padWalletAddress(wallet.publicKey);
 
       console.log('Transfer parameters:', {
         amount: usdcAmount,
