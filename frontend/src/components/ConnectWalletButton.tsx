@@ -1,39 +1,13 @@
-import { useState, useEffect } from 'react';
 import { useUser, useAuth } from '@clerk/clerk-react';
-import { useCreateWallet, useGetWallet } from '@chipi-stack/chipi-react';
+import { useCreateWallet } from '@chipi-stack/chipi-react';
 import { toast } from 'react-hot-toast';
+import { useBalance } from '../contexts/BalanceContext';
 
 export default function ConnectWalletButton() {
   const { user } = useUser();
   const { getToken } = useAuth();
   const { createWalletAsync, isLoading: isCreating } = useCreateWallet();
-  const { getWalletAsync } = useGetWallet();
-  const [hasWallet, setHasWallet] = useState(false);
-  const [isChecking, setIsChecking] = useState(true);
-
-  useEffect(() => {
-    checkWalletExists();
-  }, [user]);
-
-  const checkWalletExists = async () => {
-    if (!user) return;
-    
-    try {
-      setIsChecking(true);
-      const token = await getToken();
-      if (!token) return;
-      
-      await getWalletAsync({
-        externalUserId: user.id,
-        bearerToken: token,
-      });
-      setHasWallet(true);
-    } catch (error) {
-      setHasWallet(false);
-    } finally {
-      setIsChecking(false);
-    }
-  };
+  const { hasWallet, refreshBalance } = useBalance();
 
   const handleCreateWallet = async () => {
     if (!user) return;
@@ -55,21 +29,14 @@ export default function ConnectWalletButton() {
         bearerToken: token,
       });
       
-      setHasWallet(true);
+      // Refresh balance context to update wallet state
+      await refreshBalance();
       toast.success('Wallet created successfully!');
     } catch (error: any) {
       console.error('Error creating wallet:', error);
       toast.error(error.message || 'Failed to create wallet');
     }
   };
-
-  if (isChecking) {
-    return (
-      <button className="btn-primary" disabled>
-        Checking wallet...
-      </button>
-    );
-  }
 
   if (!hasWallet) {
     return (

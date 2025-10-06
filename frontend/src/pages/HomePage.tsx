@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Header from '../components/Header';
 import MainLayout from '../components/layout/MainLayout';
 import BankTransferForm from '../components/BankTransferForm';
@@ -8,13 +8,26 @@ import QuickActionsRow from '../components/QuickActionsRow';
 import TransactionHistorySection from '../components/TransactionHistorySection';
 import ServicesGrid from '../components/ServicesGrid';
 import ConnectWalletButton from '../components/ConnectWalletButton';
+import { useBalance } from '../contexts/BalanceContext';
 // import ExportWallet from '../components/ExportWallet';
 import { IoChevronBackOutline } from 'react-icons/io5';
 
 type ActiveView = 'home' | 'airtime' | 'bank' | 'wallet-setup';
 
 export default function HomePage() {
+  const { hasWallet, isCheckingWallet } = useBalance();
   const [activeView, setActiveView] = useState<ActiveView>('wallet-setup');
+
+  // Check wallet existence and update view accordingly
+  useEffect(() => {
+    if (!isCheckingWallet) {
+      if (hasWallet) {
+        setActiveView('home');
+      } else {
+        setActiveView('wallet-setup');
+      }
+    }
+  }, [hasWallet, isCheckingWallet]);
 
   const handleAirtimeClick = () => {
     setActiveView('airtime');
@@ -27,6 +40,18 @@ export default function HomePage() {
   const handleBackToHome = () => {
     setActiveView('home');
   };
+
+  // Show loading while checking wallet
+  if (isCheckingWallet) {
+    return (
+      <div className="bg-primary min-h-screen text-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-8 h-8 border-2 border-accent border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-secondary">Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   // Mobile-first design with desktop fallback
   return (

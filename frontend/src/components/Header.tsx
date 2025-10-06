@@ -3,34 +3,61 @@ import { UserButton } from '@clerk/clerk-react';
 import { useGetWallet } from '@chipi-stack/chipi-react';
 import { IoHelpCircleOutline, IoNotificationsOutline } from 'react-icons/io5';
 import { toast } from 'react-hot-toast';
+import { useBalance } from '../contexts/BalanceContext';
 
 export default function Header() {
   const { user, isSignedIn } = useUser();
   const { getToken } = useAuth();
   const { getWalletAsync } = useGetWallet();
-
+  const { walletAddress } = useBalance();
 
   const handleNameClick = async () => {
-    if (!user) return;
+    if (!user) {
+      toast.error('User not authenticated');
+      return;
+    }
     
     try {
-      const token = await getToken();
-      if (!token) return;
+      let addressToCopy = walletAddress;
       
-      const wallet = await getWalletAsync({
-        externalUserId: user.id,
-        bearerToken: token,
-      });
+      // If wallet address not available in context, fetch it directly
+      if (!addressToCopy) {
+        const token = await getToken();
+        if (!token) {
+          toast.error('Authentication token not available');
+          return;
+        }
+        
+        const wallet = await getWalletAsync({
+          externalUserId: user.id,
+          bearerToken: token,
+        });
+        
+        addressToCopy = wallet.publicKey;
+      }
       
       // ChipiPay's publicKey needs padding with 00 after 0x if less than 64 chars
-      let contractAddress = wallet.publicKey;
-      
+      let contractAddress = addressToCopy;
       if (contractAddress.startsWith('0x') && contractAddress.length < 66) {
         contractAddress = '0x00' + contractAddress.slice(2);
       }
       
-
-      await navigator.clipboard.writeText(contractAddress);
+      // Try modern clipboard API first, fallback for mobile browsers
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(contractAddress);
+      } else {
+        // Fallback for mobile browsers
+        const textArea = document.createElement('textarea');
+        textArea.value = contractAddress;
+        textArea.style.position = 'fixed';
+        textArea.style.left = '-999999px';
+        textArea.style.top = '-999999px';
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        document.execCommand('copy');
+        textArea.remove();
+      }
       toast.success('Wallet address copied to clipboard!');
     } catch (error) {
       console.error('Copy address error:', error);

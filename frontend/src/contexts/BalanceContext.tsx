@@ -7,6 +7,8 @@ interface BalanceContextType {
   balance: number | null;
   isLoading: boolean;
   walletAddress: string;
+  hasWallet: boolean;
+  isCheckingWallet: boolean;
   refreshBalance: () => Promise<void>;
 }
 
@@ -19,70 +21,77 @@ export function BalanceProvider({ children }: { children: ReactNode }) {
   const [balance, setBalance] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [walletAddress, setWalletAddress] = useState<string>('');
+  const [hasWallet, setHasWallet] = useState(false);
+  const [isCheckingWallet, setIsCheckingWallet] = useState(true);
   const lastFetchTime = useRef<number>(0);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
-  const fetchBalance = async (force = false) => {
+  const fetchWalletAndBalance = async (force = false) => {
     if (!user) {
       setBalance(null);
       setWalletAddress('');
+      setHasWallet(false);
+      setIsCheckingWallet(false);
       return;
     }
 
-    const now = Date.now();
-    const TWO_MINUTES = 120000;
-    
-    // Skip if fetched recently and not forced
-    if (!force && now - lastFetchTime.current < TWO_MINUTES) {
-      console.log('Skipping balance fetch - too recent');
-      return;
-    }
-
-    console.log('Fetching balance...', { force, user: user.id });
-    setIsLoading(true);
     try {
       const token = await getToken();
-      if (!token) return;
+      if (!token) {
+        setIsCheckingWallet(false);
+        return;
+      }
 
       const wallet = await getWalletAsync({
         externalUserId: user.id,
         bearerToken: token,
       });
       
-      setWalletAddress(wallet.publicKey);
+      // ChipiPay returns wallet data if it exists, no status field
+      const isWalletReady = !!wallet?.publicKey && !!wallet?.encryptedPrivateKey;
       
-      // Pad address for balance checking
-      let paddedAddress = wallet.publicKey;
-      if (paddedAddress.startsWith('0x') && paddedAddress.length < 66) {
-        paddedAddress = '0x00' + paddedAddress.slice(2);
+      setWalletAddress(wallet.publicKey || '');
+      setHasWallet(isWalletReady);
+      
+      // Only fetch balance if forced or not fetched recently
+      const now = Date.now();
+      const TWO_MINUTES = 120000;
+      
+      if (isWalletReady && (force || now - lastFetchTime.current >= TWO_MINUTES)) {
+        setIsLoading(true);
+        
+        // Pad address for balance checking
+        let paddedAddress = wallet.publicKey;
+        if (paddedAddress.startsWith('0x') && paddedAddress.length < 66) {
+          paddedAddress = '0x00' + paddedAddress.slice(2);
+        }
+        
+        const usdcBalance = await getUSDCBalance(paddedAddress);
+        setBalance(usdcBalance);
+        lastFetchTime.current = now;
       }
-      
-      console.log('Calling getUSDCBalance for:', paddedAddress);
-      const usdcBalance = await getUSDCBalance(paddedAddress);
-      console.log('Balance fetched:', usdcBalance);
-      
-      setBalance(usdcBalance);
-      lastFetchTime.current = now;
     } catch (error) {
-      console.error('Failed to fetch balance:', error);
+      console.error('Failed to fetch wallet/balance:', error);
+      setHasWallet(false);
       if (balance === null) setBalance(0);
     } finally {
       setIsLoading(false);
+      setIsCheckingWallet(false);
     }
   };
 
-  // Initial balance fetch on login
+  // Initial wallet and balance fetch on login
   useEffect(() => {
     if (user) {
-      fetchBalance(true); // Force fetch on login
+      fetchWalletAndBalance(true); // Force fetch on login
     }
   }, [user]);
 
-  // Set up 2-minute interval
+  // Set up 2-minute interval for balance updates
   useEffect(() => {
     if (user) {
       intervalRef.current = setInterval(() => {
-        fetchBalance(false);
+        fetchWalletAndBalance(false);
       }, 120000); // 2 minutes
     }
 
@@ -94,8 +103,7 @@ export function BalanceProvider({ children }: { children: ReactNode }) {
   }, [user]);
 
   const refreshBalance = async () => {
-    console.log('Manual balance refresh triggered');
-    await fetchBalance(true);
+    await fetchWalletAndBalance(true);
   };
 
   return (
@@ -103,6 +111,8 @@ export function BalanceProvider({ children }: { children: ReactNode }) {
       balance,
       isLoading,
       walletAddress,
+      hasWallet,
+      isCheckingWallet,
       refreshBalance
     }}>
       {children}

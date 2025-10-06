@@ -1,58 +1,17 @@
-import { useState, useEffect } from 'react';
-import { useUser, useAuth } from '@clerk/clerk-react';
-import { useGetWallet } from '@chipi-stack/chipi-react';
+import { useState } from 'react';
+import { useUser } from '@clerk/clerk-react';
 import { IoEyeOutline, IoEyeOffOutline, IoChevronForwardOutline } from 'react-icons/io5';
-import { getUSDCBalance } from '../utils/starknet';
+import { useBalance } from '../contexts/BalanceContext';
 
 export default function AvailableBalanceCard() {
   const { user } = useUser();
-  const { getToken } = useAuth();
-  const { getWalletAsync } = useGetWallet();
+  const { balance, isLoading } = useBalance();
   const [showBalance, setShowBalance] = useState(true);
-  const [balance, setBalance] = useState<number>(0);
-  const [isLoading, setIsLoading] = useState(false);
-
-  // Fetch USDC balance
-  useEffect(() => {
-    const fetchBalance = async () => {
-      if (!user) {
-        setBalance(0);
-        return;
-      }
-
-      setIsLoading(true);
-      try {
-        const token = await getToken();
-        if (!token) return;
-
-        const wallet = await getWalletAsync({
-          externalUserId: user.id,
-          bearerToken: token,
-        });
-        
-        // Pad address for balance checking
-        let paddedAddress = wallet.publicKey;
-        if (paddedAddress.startsWith('0x') && paddedAddress.length < 66) {
-          paddedAddress = '0x00' + paddedAddress.slice(2);
-        }
-        
-        // Get real USDC balance using starknet.js
-        const usdcBalance = await getUSDCBalance(paddedAddress);
-        setBalance(usdcBalance);
-      } catch (error) {
-        console.error('Failed to fetch balance:', error);
-        setBalance(0);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchBalance();
-  }, [user, getToken, getWalletAsync]);
 
   // Convert USDC to NGN (1 USDC = 1600 NGN)
   const usdcToNgn = 1600;
-  const balanceInNgn = (balance * usdcToNgn).toFixed(2);
+  const displayBalance = balance ?? 0;
+  const balanceInNgn = (displayBalance * usdcToNgn).toFixed(2);
 
   const toggleBalanceVisibility = () => {
     setShowBalance(!showBalance);
@@ -76,20 +35,25 @@ export default function AvailableBalanceCard() {
             </button>
           </div>
           <div className="text-white text-3xl font-bold">
-            {isLoading ? (
+            {isLoading && balance === null ? (
               <div className="flex items-center">
                 <div className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2"></div>
                 Loading...
               </div>
             ) : showBalance ? (
-              user ? `₦${balanceInNgn}` : '₦0.00'
+              <div className="flex items-center">
+                {user ? `₦${balanceInNgn}` : '₦0.00'}
+                {isLoading && balance !== null && (
+                  <div className="w-4 h-4 border border-white/30 border-t-white rounded-full animate-spin ml-2 opacity-50"></div>
+                )}
+              </div>
             ) : (
               '₦****'
             )}
           </div>
-          {user && balance > 0 && showBalance && (
+          {user && displayBalance > 0 && showBalance && (
             <div className="text-white/70 text-sm mt-1">
-              ${balance.toFixed(2)} USDC
+              ${displayBalance.toFixed(2)} USDC
             </div>
           )}
         </div>
