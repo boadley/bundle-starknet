@@ -9,14 +9,14 @@
 | **Quick Links** | |
 |---|---|
 | 🚀 **Live App Demo** | [bundle-Starknet.splashycm.xyz](https://bundle-Starknet.splashycm.xyz) (_Optimized for mobile_) |
-| 🎬 **Watch the 3-Min Video Pitch** | [Watch on YouTube](https://youtube.com/shorts/BySNTIsQe4Y?feature=share) |
-| 📊 **View the Pitch Deck** | [Pitch Deck Link](https://the-future-is-bundled-ap-ppk4lx9.gamma.site/) |
+| 🎬 **Watch the 3-Min Video Pitch** | [Watch on YouTube](https://www.youtube.com/watch?v=9KTvt0PmUS0) |
+| 📊 **View the Pitch Deck** | [Pitch Deck Link](https://the-future-is-bundled-st-c8zq220.gamma.site/) |
 
 ---
 
 ## 🎬 The Demo Video (The Best Place to Start)
 
-<a href="https://youtube.com/shorts/BySNTIsQe4Y?feature=share"><img src="https://github.com/boadley/bundle-Starknet/blob/main/media/bundle_video_thumbnail.jpg" alt="Bundle Demo Video Screenshot" width="300"></a>
+<a href="https://www.youtube.com/watch?v=9KTvt0PmUS0"><img src="https://github.com/boadley/bundle-Starknet/blob/main/media/bundle_video_thumbnail.jpg" alt="Bundle Demo Video Screenshot" width="300"></a>
 <br>
 **(Click the image to watch the 3-minute video)**
 
@@ -50,8 +50,8 @@ This MVP is a fully functional demonstration of the core 'OpenRouter for Fiat' t
 
 ## 🏆 A Multi-Track Winning Strategy
 
-Bundle is designed as a super-app ecosystem to address all four hackathon tracks:
--   **Onchain Finance:** Flawless stablecoin off-ramping for real-world assets.
+Bundle is designed as a super-app ecosystem to address the main hackathon tracks and more:
+-   **Next-Gen Payments:** Flawless stablecoin off-ramping for real-world assets.
 -   **DLT for Operations:** Our B2B API (vision) will automate corporate expenses.
 -   **Immersive Experience:** Our roadmap includes NFT loyalty badges and DeFi savings vaults.
 -   **AI & DePIN:** Our core moat is an AI-powered routing engine that ensures the cheapest, most reliable payment path.
@@ -64,7 +64,7 @@ Bundle is designed as a super-app ecosystem to address all four hackathon tracks
 -   **Authentication:** Clerk (@clerk/clerk-react)
 -   **Wallet Integration:** ChipiPay SDK (@chipi-stack/chipi-react)
 -   **Backend:** Node.js, Express
--   **Blockchain:** Starknet (USDC payments)
+-   **Blockchain:** Starknet (USDC gasless payments)
 -   **Fiat Payments:** Paystack API (Sandbox)
 -   **Deployment:** AWS EC2 (Frontend & Backend)
 
@@ -72,7 +72,7 @@ Bundle is designed as a super-app ecosystem to address all four hackathon tracks
 
 To run this project locally, please follow these steps:
 1.  Clone the repository: `git clone https://github.com/boadley/bundle-starknet.git`
-2.  Install ChipiPay and Clerk dependencies: Run `install-dependencies.bat` (Windows) or manually install:
+2.  Install ChipiPay and Clerk dependencies:
     ```bash
     cd frontend
     npm install @chipi-stack/chipi-react@latest @clerk/clerk-react@latest
